@@ -98,3 +98,10 @@ Inspect debezium creating new record in kafka topic corresponding to the databas
 
 
 
+## Clean Up
+
+```
+oc delete -f .
+oc delete pvc -l strimzi.io/cluster=my-cluster
+```
+
