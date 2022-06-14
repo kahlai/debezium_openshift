@@ -23,6 +23,7 @@ oc client cli
 ```bash
 oc new-project kafka
 
+cd openshift
 oc apply -f Kafka.yaml
 oc apply -f MPvc.yaml
 oc apply -f MSecret.yaml
