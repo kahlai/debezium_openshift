@@ -1,0 +1,25 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: my-source-connector
+  labels:
+    strimzi.io/cluster: my-connect-cluster
+spec:
+  class: io.debezium.connector.mysql.MySqlConnector
+  tasksMax: 1
+  config:
+    "database.hostname": "mysql"
+    "database.ssl.mode": "disabled"
+    "database.allowPublicKeyRetrieval": "true"
+    "database.port": "3306"
+    "database.user": "debezium"
+    "database.password": "dbz"
+    "database.server.id": "1"
+    "database.server.name": "dbserver1"
+    "database.include": "inventory"
+    "database.history.kafka.bootstrap.servers": "my-cluster-kafka-bootstrap:9092"
+    "database.history.kafka.topic": "schema-changes.inventory"
+    "transforms": "route"
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter"
+    "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)"
+    "transforms.route.replacement": "$3"

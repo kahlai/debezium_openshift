@@ -1,0 +1,86 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: mysql
+  labels:
+    app.openshift.io/runtime: mysql-database
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  test: false
+  selector:
+    name: mysql
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        name: mysql
+    spec:
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql
+      containers:
+        - resources:
+            limits:
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - '-i'
+                - '-c'
+                - MYSQL_PWD="$MYSQL_PASSWORD" mysqladmin -u $MYSQL_USER ping
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          name: mysql
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - '-i'
+                - '-c'
+                - MYSQL_PWD="$MYSQL_PASSWORD" mysqladmin -u $MYSQL_USER ping
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: MYSQL_USER
+              value: mysqluser
+            - name: MYSQL_PASSWORD
+              value: mysqlpassword
+            - name: MYSQL_ROOT_PASSWORD
+              value: dbz
+            - name: MYSQL_DATABASE
+              value: inventory
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql/data
+          image: registry.redhat.io/rhscl/mysql-80-rhel7:latest
+          # args: ["--ignore-db-dir=lost+found"]
+            
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: mysql
+spec:
+  ports:
+    - name: mysql
+      protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: ClusterIP
+  selector:
+    name: mysql

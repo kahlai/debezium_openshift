@@ -1,0 +1,26 @@
+kind: KafkaConnect
+apiVersion: kafka.strimzi.io/v1beta2
+metadata:
+  name: my-connect-cluster
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+spec:
+  version: 3.1.0
+  image: 'quay.io/kahlai/connect-debezium:v4'
+  replicas: 1
+  bootstrapServers: 'my-cluster-kafka-bootstrap:9093'
+  tls:
+    trustedCertificates:
+      - secretName: my-cluster-cluster-ca-cert
+        certificate: ca.crt
+  config:
+    group.id: connect-cluster
+    offset.storage.topic: connect-cluster-offsets
+    config.storage.topic: connect-cluster-configs
+    status.storage.topic: connect-cluster-status
+    config.storage.replication.factor: 1
+    offset.storage.replication.factor: 1
+    status.storage.replication.factor: 1
+    config.storage.min.insync.replicas: 1
+    offset.storage.min.insync.replicas: 1
+    status.storage.min.insync.replicas: 1
